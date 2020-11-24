@@ -113,6 +113,37 @@ func TestNewTiming(t *testing.T) {
 	})
 }
 
+func TestNewCustomTiming(t *testing.T) {
+	i := 0
+	now = func() time.Time {
+		i++
+		switch i {
+		default:
+			return testDate
+		case 2:
+			return testDate.Add(10 * time.Millisecond)
+		case 3:
+			return testDate.Add(100 * time.Millisecond)
+		case 4:
+			return testDate.Add(time.Second)
+		}
+	}
+	defer func() { now = time.Now }()
+
+	testOutput(t, "test_key:10|ms\ntest_key:1000|ms", func(c *Client) {
+		timing := c.NewCustomTiming(now())
+		timing.Send(testKey)
+
+		got := timing.Duration().Nanoseconds()
+		want := int64(100 * time.Millisecond)
+		if got != want {
+			t.Errorf("Duration() = %v, want %v", got, want)
+		}
+
+		timing.Send(testKey)
+	})
+}
+
 func TestUnique(t *testing.T) {
 	testOutput(t, "test_key:foo|s", func(c *Client) {
 		c.Unique(testKey, "foo")

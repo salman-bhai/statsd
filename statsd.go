@@ -127,6 +127,11 @@ func (c *Client) NewTiming() Timing {
 	return Timing{start: now(), c: c}
 }
 
+// NewCustomTiming creates a custom start time
+func (c *Client) NewCustomTiming(t time.Time) Timing {
+	return Timing{start: t, c: c}
+}
+
 // Send sends the time elapsed since the creation of the Timing.
 func (t Timing) Send(bucket string) {
 	t.c.Timing(bucket, int(t.Duration()/time.Millisecond))
